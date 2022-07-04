@@ -1,13 +1,19 @@
 package com.mrkumar.workoutapp
 
+import android.media.MediaPlayer
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.speech.tts.TextToSpeech
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import com.mrkumar.workoutapp.databinding.ActivityExerciseBinding
+import java.util.*
+import kotlin.collections.ArrayList
 
-class ExerciseActivity : AppCompatActivity() {
+class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     var binding:ActivityExerciseBinding?=null
 
     private var resetTimer:CountDownTimer?=null
@@ -19,6 +25,10 @@ class ExerciseActivity : AppCompatActivity() {
     private var exerciseList:ArrayList<ExerciseModel>?=null
     private var currentExercisePosition = -1
 
+    private var tts:TextToSpeech?=null
+
+    private var player:MediaPlayer?=null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding=ActivityExerciseBinding.inflate(layoutInflater)
@@ -26,6 +36,7 @@ class ExerciseActivity : AppCompatActivity() {
         setContentView(view)
 
         setSupportActionBar(binding!!.toolbarExercise)
+        tts= TextToSpeech(this,this)
 
         if (supportActionBar != null){
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -38,31 +49,47 @@ class ExerciseActivity : AppCompatActivity() {
     }
 
     private fun setupRestView(){
+        try{
+            val soundUri=Uri.parse("android.resource://com.mrkumar.workoutapp"+R.raw.press_start)
+
+            player=MediaPlayer.create(applicationContext,soundUri)
+            player?.isLooping=false
+            player?.start()
+
+        }catch (e:Exception){
+            e.printStackTrace()
+        }
         binding?.flRestView?.visibility=View.VISIBLE
         binding?.tvTitle?.visibility=View.VISIBLE
         binding?.flExerciseView?.visibility=View.INVISIBLE
         binding?.tvExerciseName?.visibility=View.INVISIBLE
         binding?.ivImage?.visibility=View.INVISIBLE
+        binding?.upcomingLabel?.visibility = View.VISIBLE
+        binding?.tvUpcomingExerciseName?.visibility = View.VISIBLE
 
         if (resetTimer!=null){
             resetTimer?.cancel()
             restProgress=0
         }
+        binding?.tvUpcomingExerciseName?.text = exerciseList!![currentExercisePosition + 1].getName()
         setRestProgressBar()
     }
 
     private fun setupExerciseView(){
         binding?.flRestView?.visibility=View.INVISIBLE
         binding?.tvTitle?.visibility=View.INVISIBLE
+        binding?.tvUpcomingExerciseName?.visibility = View.INVISIBLE
+        binding?.upcomingLabel?.visibility = View.INVISIBLE
         binding?.flExerciseView?.visibility=View.VISIBLE
         binding?.tvExerciseName?.visibility=View.VISIBLE
         binding?.ivImage?.visibility=View.VISIBLE
+
 
         if (exerciseTimer!=null){
             exerciseTimer?.cancel()
             exerciseProgress=0
         }
-
+        speakOut(exerciseList!![currentExercisePosition].getName())
         binding?.ivImage?.setImageResource(exerciseList!![currentExercisePosition].getImage())
         binding?.tvExerciseName?.text =exerciseList!![currentExercisePosition].getName()
         setExerciseProgressBar()
@@ -123,7 +150,32 @@ class ExerciseActivity : AppCompatActivity() {
             exerciseTimer?.cancel()
             exerciseProgress=0
         }
+
+        if (tts!=null){
+            tts!!.stop()
+            tts!!.shutdown()
+        }
+
+        if (player!=null){
+            player!!.stop()
+        }
         binding=null
+    }
+
+    override fun onInit(status: Int) {
+        if (status==TextToSpeech.SUCCESS){
+            val result=tts?.setLanguage(Locale.US)
+
+            if (result==TextToSpeech.LANG_MISSING_DATA||result==TextToSpeech.LANG_NOT_SUPPORTED){
+                Log.e("tts", "The Language Specified is Not Supported: ")
+            }
+        }else{
+            Log.e("tts", "Initialization Failed: ")
+        }
+    }
+
+    private fun speakOut(text:String){
+        tts!!.speak(text,TextToSpeech.QUEUE_FLUSH,null,"")
     }
 
 }
