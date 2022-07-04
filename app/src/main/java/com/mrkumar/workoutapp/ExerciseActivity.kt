@@ -33,10 +33,17 @@ class ExerciseActivity : AppCompatActivity() {
         binding!!.toolbarExercise.setNavigationOnClickListener {
             onBackPressed()
         }
+        exerciseList = Constants.defaultExerciseList()
         setupRestView()
     }
 
     private fun setupRestView(){
+        binding?.flRestView?.visibility=View.VISIBLE
+        binding?.tvTitle?.visibility=View.VISIBLE
+        binding?.flExerciseView?.visibility=View.INVISIBLE
+        binding?.tvExerciseName?.visibility=View.INVISIBLE
+        binding?.ivImage?.visibility=View.INVISIBLE
+
         if (resetTimer!=null){
             resetTimer?.cancel()
             restProgress=0
@@ -45,20 +52,26 @@ class ExerciseActivity : AppCompatActivity() {
     }
 
     private fun setupExerciseView(){
-        binding?.flProgressBar?.visibility=View.INVISIBLE
-        binding?.tvTitle?.text="Exercise Name"
+        binding?.flRestView?.visibility=View.INVISIBLE
+        binding?.tvTitle?.visibility=View.INVISIBLE
         binding?.flExerciseView?.visibility=View.VISIBLE
+        binding?.tvExerciseName?.visibility=View.VISIBLE
+        binding?.ivImage?.visibility=View.VISIBLE
+
         if (exerciseTimer!=null){
             exerciseTimer?.cancel()
             exerciseProgress=0
         }
+
+        binding?.ivImage?.setImageResource(exerciseList!![currentExercisePosition].getImage())
+        binding?.tvExerciseName?.text =exerciseList!![currentExercisePosition].getName()
         setExerciseProgressBar()
     }
 
     private fun setRestProgressBar(){
         binding?.progressBar?.progress=restProgress
 
-        resetTimer =object :CountDownTimer(10000,1000){
+        resetTimer =object :CountDownTimer(3000,1000){
             override fun onTick(millisUntilFinished: Long) {
                 restProgress++
                 binding?.progressBar?.progress=10-restProgress
@@ -67,9 +80,7 @@ class ExerciseActivity : AppCompatActivity() {
             }
 
             override fun onFinish() {
-                Toast.makeText(this@ExerciseActivity,
-                "Here now we will start the exercise",
-                    Toast.LENGTH_SHORT).show()
+                currentExercisePosition++
                 setupExerciseView()
             }
 
@@ -88,9 +99,15 @@ class ExerciseActivity : AppCompatActivity() {
             }
 
             override fun onFinish() {
-                Toast.makeText(this@ExerciseActivity,
-                    "Here now we will start the exercise",
-                    Toast.LENGTH_SHORT).show()
+                if(currentExercisePosition<exerciseList?.size!!-1){
+                    setupRestView()
+                }else {
+                    Toast.makeText(
+                        this@ExerciseActivity,
+                        "Congratulation! You have completed the 7 minutes workout.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
 
         }.start()
