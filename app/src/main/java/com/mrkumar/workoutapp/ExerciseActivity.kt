@@ -9,6 +9,7 @@ import android.speech.tts.TextToSpeech
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.mrkumar.workoutapp.databinding.ActivityExerciseBinding
 import java.util.*
 import kotlin.collections.ArrayList
@@ -29,6 +30,8 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private var player:MediaPlayer?=null
 
+    private var exerciseAdapter:ExerciseStatusAdapter?=null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding=ActivityExerciseBinding.inflate(layoutInflater)
@@ -46,6 +49,7 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
         exerciseList = Constants.defaultExerciseList()
         setupRestView()
+        setupExerciseRecyclerview()
     }
 
     private fun setupRestView(){
@@ -75,6 +79,13 @@ class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         setRestProgressBar()
     }
 
+    private fun setupExerciseRecyclerview(){
+        binding?.rvExerciseStatus?.layoutManager=LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
+
+        exerciseAdapter=ExerciseStatusAdapter( exerciseList!!)
+
+        binding?.rvExerciseStatus?.adapter=exerciseAdapter
+    }
     private fun setupExerciseView(){
         binding?.flRestView?.visibility=View.INVISIBLE
         binding?.tvTitle?.visibility=View.INVISIBLE
