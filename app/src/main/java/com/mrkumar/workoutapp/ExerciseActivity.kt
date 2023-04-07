@@ -20,11 +20,11 @@ import kotlin.collections.ArrayList
 class ExerciseActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     var binding:ActivityExerciseBinding?=null
 
-    private var resetTimerDuration:Long = 1
+    private var resetTimerDuration:Long = 10
     private var resetTimer:CountDownTimer?=null
     private var restProgress =0
 
-    private var exerciseTimerDuration:Long = 1
+    private var exerciseTimerDuration:Long = 30
     private var exerciseTimer:CountDownTimer?=null
     private var exerciseProgress =0
 
